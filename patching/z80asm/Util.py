@@ -1,8 +1,7 @@
 import collections
 import re
-from typing import List
 
-from ...patching.z80asm.Errors import ArgumentOverflowError
+from Errors import ArgumentOverflowError
 
 
 def strip_line(line: str) -> str:

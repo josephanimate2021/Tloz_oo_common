@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 
 import Utils
-from worlds.tloz_oos.common.patching.RomData import RomData
-from worlds.tloz_oos.common.patching.text.decoding import parse_text_dict, parse_all_texts
+from ..RomData import RomData
+from ..text.decoding import parse_text_dict, parse_all_texts
 
 
 def load_vanilla_dict_data(seasons: bool) -> None | dict[str, str]:

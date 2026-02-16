@@ -1,8 +1,8 @@
 from collections.abc import Collection
 from typing import Optional
 
-from worlds.tloz_oos.common.patching.z80asm.Assembler import GameboyAddress
-from worlds.tloz_oos.common.patching.z80asm.Util import hex_str
+from z80asm.Assembler import GameboyAddress
+from z80asm.Util import hex_str
 
 
 class RomData:
