@@ -50,6 +50,13 @@ def value_to_byte_array(value: int, expected_size: int) -> list[int]:
         output.append(value & 0xFF)
         value >>= 8
     if len(output) > expected_size:
+        # Rebuild the initial value.
+        # It is slower but it's ok to spend a lot of time during errors if it saves time during normal behavior
+        initial_value = value
+        output.reverse()
+        for i in output:
+            initial_value <<= 8
+            initial_value += i
         raise ArgumentOverflowError(value, expected_size)
     while len(output) < expected_size:
         output.append(0x00)
