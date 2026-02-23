@@ -5,7 +5,8 @@ from ..Options import OraclesShopPrices, OraclesMasterKeys, OraclesLogicDifficul
 from ...data import LOCATIONS_DATA, ITEMS_DATA
 from ...data.Constants import ITEM_GROUPS, DUNGEON_NAMES
 from ..data.Constants import VALID_RUPEE_ITEM_VALUES, SEED_ITEMS
-from ..generation.CreateRegions import location_is_active
+from .CreateRegions import location_is_active
+from .FillerItems import *
 
 
 def create_item(world, name) -> Item:
@@ -248,13 +249,13 @@ def build_item_pool_dict(world) -> dict[str, int]:
 
     # Add as many filler items as required
     for _ in range(filler_item_count):
-        random_filler_item = world.get_filler_item_name()
+        random_filler_item = get_filler_item_name(world)
         item_pool_dict[random_filler_item] = item_pool_dict.get(random_filler_item, 0) + 1
 
     if "Random Ring" in item_pool_dict:
         quantity = item_pool_dict["Random Ring"]
         for _ in range(quantity):
-            ring_name = world.get_random_ring_name()
+            ring_name = get_random_ring_name(world)
             item_pool_dict[ring_name] = item_pool_dict.get(ring_name, 0) + 1
         del item_pool_dict["Random Ring"]
 

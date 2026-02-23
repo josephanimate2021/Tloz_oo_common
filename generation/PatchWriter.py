@@ -1,36 +1,36 @@
 import json
 from collections import defaultdict
-
-from ..Options import OracleOfSeasonsOptions
-from ..World import OracleOfSeasonsWorld
-from ..patching.ProcedurePatch import OoSProcedurePatch
+from ...patching.ProcedurePatch import OoProcedurePatch
 
 
-def oos_create_ap_procedure_patch(world: OracleOfSeasonsWorld) -> OoSProcedurePatch:
-    patch = OoSProcedurePatch()
+def oo_create_ap_procedure_patch(world, user_patch_data: dict):
+    """
+    Creates a Procedure Patch for a game.
+
+    Parameters:
+        world: The world used to patch a game.
+        user_patch_data (dict): Any data a user puts in that will be used for patching the game.
+    """
+    patch = OoProcedurePatch()
 
     patch.player = world.player
     patch.player_name = world.multiworld.get_player_name(world.player)
 
     patch_data = {
         "version": f"{world.version()}",
+        "seasons": False,
+        "ages": False,
+        "romhack": False,
         "seed": world.multiworld.seed,
-        "options": world.options.as_dict(
-            *[option_name for option_name in OracleOfSeasonsOptions.type_hints
-              if hasattr(OracleOfSeasonsOptions.type_hints[option_name], "include_in_patch")]),
-        "samasa_gate_sequence": " ".join([str(x) for x in world.samasa_gate_code]),
-        "lost_woods_item_sequence": world.lost_woods_item_sequence,
-        "lost_woods_main_sequence": world.lost_woods_main_sequence,
-        "default_seasons": world.default_seasons,
         "old_man_rupee_values": world.old_man_rupee_values,
         "dungeon_entrances": {a.replace(" entrance", ""): b.replace("enter ", "")
                               for a, b in world.dungeon_entrances.items()},
         "locations": {},
-        "subrosia_portals": world.portal_connections,
         "shop_prices": world.shop_prices,
-        "subrosia_seaside_location": world.random.randint(0, 3),
         "region_hints": world.region_hints,
     }
+    for property, value in user_patch_data.items():
+        patch_data[property] = value
 
     for loc in world.multiworld.get_locations(world.player):
         # Skip event locations which are not real in-game locations that need to be patched

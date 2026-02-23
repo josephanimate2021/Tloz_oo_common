@@ -1,35 +1,34 @@
 from BaseClasses import MultiWorld
 from Fill import fill_restrictive
-from ..World import OracleOfSeasonsWorld
-from ..data import LOCATIONS_DATA
-from ..data.Constants import DUNGEON_NAMES
+from ...data import LOCATIONS_DATA
+from ...data.Constants import DUNGEON_NAMES
 
 
-def stage_pre_fill_dungeon_items(multiworld: MultiWorld):
+def stage_pre_fill_dungeon_items(multiworld: MultiWorld, game: str):
     # If keysanity is off, dungeon items can only be put inside local dungeon locations, and there are not so many
     # of those which makes them pretty crowded.
     # This usually ends up with generator not having anywhere to place a few small keys, making the seed unbeatable.
     # To circumvent this, we perform a restricted pre-fills here, placing only those dungeon items
     # before anything else.
-    oos_players = multiworld.get_game_players(OracleOfSeasonsWorld.game)
+    oo_players = multiworld.get_game_players(game)
 
     base_all_state = multiworld.get_all_state(False, collect_pre_fill_items=False, perform_sweep=False)
-    # Collect all pre_fill_items except our OoS's and then sweep. This gives more accurate results in cases of item
+    # Collect all pre_fill_items except our oracle game's and then sweep. This gives more accurate results in cases of item
     # plando being used to remove items from the item pool and placing them into locations locked behind pre_fill
     # items.
     for player in multiworld.player_ids:
-        if player in oos_players:
+        if player in oo_players:
             continue
         subworld = multiworld.worlds[player]
         for item in subworld.get_pre_fill_items():
             subworld.collect(base_all_state, item)
     base_all_state.sweep_for_advancements()
 
-    for filling_player in oos_players:
+    for filling_player in oo_players:
         # Create a player-specific state for just the player that is filling dungeons.
         per_player_base_all_state = base_all_state.copy()
-        # Collect the pre_fill_items() of all other OoS players into the state.
-        for other_player in oos_players:
+        # Collect the pre_fill_items() of all other oracle game players into the state.
+        for other_player in oo_players:
             if other_player == filling_player:
                 continue
             subworld = multiworld.worlds[other_player]
