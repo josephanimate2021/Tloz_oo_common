@@ -16,14 +16,14 @@ def generate_early(world) -> None:
     world.remaining_progressive_gasha_seeds = world.options.deterministic_gasha_locations.value
 
     pick_essences_in_game(world)
-    if len(world.essences_in_game) < world.options.treehouse_old_man_requirement:
+    if world.seasons and len(world.essences_in_game) < world.options.treehouse_old_man_requirement:
         world.options.treehouse_old_man_requirement.value = len(world.essences_in_game)
 
-    restrict_non_local_items(world)
-    randomize_default_seasons(world)
+    world.restrict_non_local_items()
     randomize_old_men(world)
 
     if world.seasons:
+        randomize_default_seasons(world)
         from ...data.Constants import SEASONS
         if world.options.randomize_lost_woods_item_sequence:
             # Pick 4 random seasons & directions (last one has to be "left")
@@ -54,8 +54,7 @@ def generate_early(world) -> None:
 
     create_random_rings_pool(world)
 
-    if world.options.linked_heros_cave.value:
-        world.dungeon_entrances["d11 entrance"] = "enter d11"
+    world.handle_heros_cave()
 
     world.item_mapping_collect = {
         "Rupees (1)": ("Rupees", 1),
@@ -113,19 +112,6 @@ def pick_essences_in_game(world) -> None:
     world.essences_in_game = world.essences_in_game[0:world.options.placed_essences]
 
 
-def restrict_non_local_items(world) -> None:
-    # Restrict non_local_items option in cases where it's incompatible with other options that enforce items
-    # to be placed locally (e.g. dungeon items with keysanity off)
-    if not world.options.keysanity_small_keys:
-        world.options.non_local_items.value -= world.item_name_groups["Small Keys"]
-        world.options.non_local_items.value -= world.item_name_groups["Master Keys"]
-    if not world.options.keysanity_boss_keys:
-        world.options.non_local_items.value -= world.item_name_groups["Boss Keys"]
-    if not world.options.keysanity_maps_compasses:
-        world.options.non_local_items.value -= world.item_name_groups["Dungeon Maps"]
-        world.options.non_local_items.value -= world.item_name_groups["Compasses"]
-
-
 def randomize_default_seasons(world) -> None:
     from ...data.Constants import SEASONS, SEASON_NAMES
     if world.options.default_seasons == "randomized":
@@ -176,7 +162,8 @@ def randomize_shop_order(world) -> None:
         if world.options.advance_shop:
             world.shop_order.append(["advanceShop1", "advanceShop2", "advanceShop3"])
         if world.options.shuffle_business_scrubs:
-            world.shop_order.extend([["spoolSwampScrub"], ["samasaCaveScrub"], ["d2Scrub"], ["d4Scrub"]])
+            if world.seasons:
+                world.shop_order.extend([["spoolSwampScrub"], ["samasaCaveScrub"], ["d2Scrub"], ["d4Scrub"]])
     world.random.shuffle(world.shop_order)
 
 

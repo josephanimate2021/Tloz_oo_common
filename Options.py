@@ -468,3 +468,24 @@ class OraclesMoveLink(Toggle):
     visibility = Visibility.all if (datetime.now().month == 4) else Visibility.none  # Only visible in april
 
     include_in_slot_data = True  # This is for the bizhawk client
+
+class OraclesBirdHint(Choice):
+    """
+    Disabled: The Owls and Know-it-all birds say their vanilla text when talked to
+    Know-it-all: Enable region hints from the birds in the house next to the advance shop
+    Owl: Enable owls to give hints about items from your world
+    """
+    display_name = "Bird Hint"
+
+    option_disabled = 0b00
+    option_know_it_all = 0b01
+    option_owl = 0b10
+    option_both = 0b11
+
+    default = option_both
+
+    def know_it_all(self) -> bool:
+        return bool(self.value & OraclesBirdHint.option_know_it_all)
+
+    def owl(self) -> bool:
+        return bool(self.value & OraclesBirdHint.option_owl)
