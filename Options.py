@@ -9,26 +9,17 @@ from ..data import ITEMS_DATA
 class OraclesGoal(Choice):
     """
     The goal to accomplish in order to complete the seed.
-    - Beat Vanila Boss: beat the usual final boss (Onox for seasons, Vernan for Ages)
-    - Beat Ganon: teleport to the Room of Rites after beating Onox or Vernan, then beat Ganon (same as linked game)
+    - Beat Vanila Boss: beat the usual final boss (Onox for seasons, Veran for Ages)
+    - Beat Ganon: teleport to the Room of Rites after beating Onox or Veran, then beat Ganon (same as linked game)
+    - Retrieve Maku Seed - You will have to retrieve the maku seed from the maku tree in order cut straight into the credits scene (similar to a triforce hunt in ALTTPR)
     """
     display_name = "Goal"
 
     option_beat_vanila_boss = 0
     option_beat_ganon = 1
+    option_retrieve_maku_seed = 2
 
     default = 0
-    include_in_patch = True
-    include_in_slot_data = True
-
-class OracleOfAgesMinibossLocations(Toggle):
-    """
-    When enabled, each time you defeat a miniboss inside a dungeon, 
-    a chest will appear in the miniboss room where if you open it, a randomized item will be inside.
-    This is an option requested by Run_In_A_Week on discord over at the Archipelago Server.
-    """
-    display_name = "Miniboss Locations"
-
     include_in_patch = True
     include_in_slot_data = True
 
@@ -468,3 +459,24 @@ class OraclesMoveLink(Toggle):
     visibility = Visibility.all if (datetime.now().month == 4) else Visibility.none  # Only visible in april
 
     include_in_slot_data = True  # This is for the bizhawk client
+
+class OraclesBirdHint(Choice):
+    """
+    Disabled: The Owls and Know-it-all birds say their vanilla text when talked to
+    Know-it-all: Enable region hints from the birds in the house next to the advance shop
+    Owl: Enable owls to give hints about items from your world
+    """
+    display_name = "Bird Hint"
+
+    option_disabled = 0b00
+    option_know_it_all = 0b01
+    option_owl = 0b10
+    option_both = 0b11
+
+    default = option_both
+
+    def know_it_all(self) -> bool:
+        return bool(self.value & OraclesBirdHint.option_know_it_all)
+
+    def owl(self) -> bool:
+        return bool(self.value & OraclesBirdHint.option_owl)

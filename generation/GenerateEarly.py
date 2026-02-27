@@ -16,37 +16,40 @@ def generate_early(world) -> None:
     world.remaining_progressive_gasha_seeds = world.options.deterministic_gasha_locations.value
 
     pick_essences_in_game(world)
-    if len(world.essences_in_game) < world.options.treehouse_old_man_requirement:
+    if world.seasons and len(world.essences_in_game) < world.options.treehouse_old_man_requirement:
         world.options.treehouse_old_man_requirement.value = len(world.essences_in_game)
 
-    restrict_non_local_items(world)
-    randomize_default_seasons(world)
+    world.restrict_non_local_items()
     randomize_old_men(world)
 
     if world.seasons:
+        randomize_default_seasons(world)
         from ...data.Constants import SEASONS
-        if world.options.randomize_lost_woods_item_sequence:
-            # Pick 4 random seasons & directions (last one has to be "left")
-            world.lost_woods_item_sequence = []
+        
+        def randomizeSequence(dir):
+            # Pick 4 random seasons & directions (last one has to be the chosen direction)
+            stuff = []
             for i in range(4):
-                world.lost_woods_item_sequence.append([
-                    world.random.choice(DIRECTIONS) if i < 3 else DIRECTION_LEFT,
+                stuff.append([
+                    world.random.choice(DIRECTIONS) if i < 3 else dir,
                     world.random.choice(SEASONS)
                 ])
+            return stuff
+
+        if world.options.randomize_lost_woods_item_sequence:
+            world.lost_woods_item_sequence = randomizeSequence(DIRECTION_LEFT)
 
         if world.options.randomize_lost_woods_main_sequence:
-            # Pick 4 random seasons & directions (last one has to be "up")
-            world.lost_woods_main_sequence = []
-            for i in range(4):
-                world.lost_woods_main_sequence.append([
-                    world.random.choice(DIRECTIONS) if i < 3 else DIRECTION_UP,
-                    world.random.choice(SEASONS)
-                ])
+            world.lost_woods_main_sequence = randomizeSequence(DIRECTION_UP)
 
         if world.options.randomize_samasa_gate_code:
             world.samasa_gate_code = []
             for i in range(world.options.samasa_gate_code_length.value):
                 world.samasa_gate_code.append(world.random.randint(0, 3))
+    elif world.ages and world.options.shuffle_dungeons:
+        # Ages uses an obsolete algorithm tht easily breaks when the new seasons apworld is dropped onto it.
+        # Sadly, keeping the old algorithm is the only option to keep things going correctly.
+        world.shuffle_dungeons()
 
     randomize_shop_order(world)
     randomize_shop_prices(world)
@@ -54,8 +57,7 @@ def generate_early(world) -> None:
 
     create_random_rings_pool(world)
 
-    if world.options.linked_heros_cave.value:
-        world.dungeon_entrances["d11 entrance"] = "enter d11"
+    world.handle_heros_cave()
 
     world.item_mapping_collect = {
         "Rupees (1)": ("Rupees", 1),
@@ -113,19 +115,6 @@ def pick_essences_in_game(world) -> None:
     world.essences_in_game = world.essences_in_game[0:world.options.placed_essences]
 
 
-def restrict_non_local_items(world) -> None:
-    # Restrict non_local_items option in cases where it's incompatible with other options that enforce items
-    # to be placed locally (e.g. dungeon items with keysanity off)
-    if not world.options.keysanity_small_keys:
-        world.options.non_local_items.value -= world.item_name_groups["Small Keys"]
-        world.options.non_local_items.value -= world.item_name_groups["Master Keys"]
-    if not world.options.keysanity_boss_keys:
-        world.options.non_local_items.value -= world.item_name_groups["Boss Keys"]
-    if not world.options.keysanity_maps_compasses:
-        world.options.non_local_items.value -= world.item_name_groups["Dungeon Maps"]
-        world.options.non_local_items.value -= world.item_name_groups["Compasses"]
-
-
 def randomize_default_seasons(world) -> None:
     from ...data.Constants import SEASONS, SEASON_NAMES
     if world.options.default_seasons == "randomized":
@@ -172,18 +161,19 @@ def randomize_shop_order(world) -> None:
         ["hiddenShop1", "hiddenShop2", "hiddenShop3"]
     ] if world.ages else world.shop_order
     if not world.romhack:
-        world.shop_order.extend([["syrupShop1"], ["syrupShop2"], ["syrupShop3"]])
+        world.shop_order.append(["syrupShop1", "syrupShop2", "syrupShop3"])
         if world.options.advance_shop:
             world.shop_order.append(["advanceShop1", "advanceShop2", "advanceShop3"])
         if world.options.shuffle_business_scrubs:
-            world.shop_order.extend([["spoolSwampScrub"], ["samasaCaveScrub"], ["d2Scrub"], ["d4Scrub"]])
+            if world.seasons:
+                world.shop_order.extend([["spoolSwampScrub"], ["samasaCaveScrub"], ["d2Scrub"], ["d4Scrub"]])
     world.random.shuffle(world.shop_order)
 
 
 def randomize_shop_prices(world) -> None:
     if world.options.shop_prices == "vanilla":
         if world.options.enforce_potion_in_shop:
-            world.shop_prices["horonShop3"] = 300
+            world.shop_prices[world.shop_order[0][2]] = 300
         return
     if world.options.shop_prices == "free":
         world.shop_prices = {k: 0 for k in world.shop_prices}
@@ -198,10 +188,12 @@ def randomize_shop_prices(world) -> None:
         for location_code in shop:
             value = world.random.gauss(average, deviation) * shop_price_factor
             world.shop_prices[location_code] = min(VALID_RUPEE_PRICE_VALUES, key=lambda x: abs(x - value))
-    # Subrosia market special cases
-    for i in range(2, 6):
-        value = world.random.gauss(average, deviation) * 0.5
-        world.shop_prices[f"subrosianMarket{i}"] = min(VALID_RUPEE_PRICE_VALUES, key=lambda x: abs(x - value))
+    
+    if world.seasons:
+        # Subrosia market special cases
+        for i in range(2, 6):
+            value = world.random.gauss(average, deviation) * 0.5
+            world.shop_prices[f"subrosianMarket{i}"] = min(VALID_RUPEE_PRICE_VALUES, key=lambda x: abs(x - value))
 
 
 def compute_rupee_requirements(world) -> None:
