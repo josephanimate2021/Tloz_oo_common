@@ -45,8 +45,8 @@ class OraclesLogicDifficulty(Choice):
 
 class OraclesRequiredEssences(Range):
     """
-    The amount of essences that need to be obtained in order to get the Maku Seed from the Maku Tree and be able
-    to fight Onox in his castle
+    The amount of essences that need to be obtained in order to get the seed from the Maku Tree and be able
+    to fight the final boss (depends on Goal Settings)
     """
     display_name = "Required Essences"
 
@@ -78,7 +78,7 @@ class OraclesAnimalCompanion(Choice):
     Determines which animal companion you can summon using the Flute, as well as the layout of the Natzu region.
     - Ricky: the kangaroo with boxing skills
     - Dimitri: the swimming dinosaur who can eat anything
-    - Moosh: the flying blue bear with a passion for Spring Bananas
+    - Moosh: the flying blue bear (in seasons, he has a passion for Spring Bananas)
     """
     display_name = "Animal Companion"
 
@@ -95,8 +95,8 @@ class OraclesDefaultSeedType(Choice):
     """
     Determines which of the 5 seed types will be the "default seed type", which is given:
     - when obtaining Seed Satchel
-    - when obtaining Slingshot
-    - by Horon Seed Tree
+    - when obtaining Slingshot or Seed Shooter
+    - by Horon (or Lynna) Seed Tree
     """
     display_name = "Default Seed Type"
 
@@ -297,7 +297,7 @@ class OraclesGashaLocations(Range):
 
 class OraclesShopPrices(Choice):
     """
-    Determine the cost of items found in shops of all sorts (including Business Scrubs (not functional yet in ages). In seasons, this also includes the Subrosian Market):
+    Determine the cost of items found in shops of all sorts (including Business Scrubs. In seasons, this also includes the Subrosian Market):
     - Vanilla: shop items have the same cost as in the base game
     - Free: all shop items can be obtained for free
     - Cheap: shop prices are randomized with an average cost of 50 Rupees
@@ -378,7 +378,7 @@ class OraclesCombatDifficulty(Choice):
 
 class OraclesQuickFlute(DefaultOnToggle):
     """
-    When enabled, playing the flute will immobilize you during a very small amount of time compared to vanilla game.
+    When enabled, playing the flute (and harp for ages) will immobilize you during a very small amount of time compared to vanilla game.
     """
     display_name = "Quick Flute"
 

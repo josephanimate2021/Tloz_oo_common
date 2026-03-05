@@ -28,6 +28,6 @@ def write_spoiler(world, spoiler_handle):
             if loc_data.get("symbolic_name", None) is None or loc_data["symbolic_name"] != shop_code:
                 continue
             if world.location_is_active(loc_name, loc_data):
-                currency = "Ore Chunks" if world.seasons and shop_code.startswith("subrosia") else "Rupees"
+                currency = "Ore Chunks" if world.seasons and shop_code.startswith("subrosia") else "Ore Chunks" if world.ages and shop_code.startswith("tokay") else "Rupees"
                 spoiler_handle.write(f"\t- {loc_name}: {price} {currency}\n")
             break

@@ -120,7 +120,7 @@ def build_currency_item_dict(world, currency_item_count: int, filler_item_count:
         valid_currency_item_values (list[int]): Vaslues that are being used for the build.
 
     Returns:
-        Dict: The fully built currency pool.
+        tuple[dict[str, int], int]: The fully built currency pool.
     """
     average_value = total_cost / currency_item_count
     deviation = average_value / 2.5

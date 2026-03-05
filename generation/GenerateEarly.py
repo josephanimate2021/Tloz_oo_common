@@ -22,6 +22,9 @@ def generate_early(world) -> None:
     world.restrict_non_local_items()
     randomize_old_men(world)
 
+    if world.options.linked_heros_cave.value:
+        world.dungeon_entrances["d11 entrance"] = "enter d11"
+
     if world.seasons:
         randomize_default_seasons(world)
         from ...data.Constants import SEASONS
@@ -56,8 +59,6 @@ def generate_early(world) -> None:
     compute_rupee_requirements(world)
 
     create_random_rings_pool(world)
-
-    world.handle_heros_cave()
 
     world.item_mapping_collect = {
         "Rupees (1)": ("Rupees", 1),
@@ -166,7 +167,7 @@ def randomize_shop_order(world) -> None:
             world.shop_order.append(["advanceShop1", "advanceShop2", "advanceShop3"])
         if world.options.shuffle_business_scrubs:
             if world.seasons:
-                world.shop_order.extend([["spoolSwampScrub"], ["samasaCaveScrub"], ["d2Scrub"], ["d4Scrub"]])
+                world.shop_order.append(["spoolSwampScrub", "samasaCaveScrub", "d2Scrub", "d4Scrub"])
     world.random.shuffle(world.shop_order)
 
 
@@ -194,6 +195,18 @@ def randomize_shop_prices(world) -> None:
         for i in range(2, 6):
             value = world.random.gauss(average, deviation) * 0.5
             world.shop_prices[f"subrosianMarket{i}"] = min(VALID_RUPEE_PRICE_VALUES, key=lambda x: abs(x - value))
+    elif world.ages:
+        from ...data.Constants import VALID_SEED_PRICE_VALUES
+        # Tokay Market special cases
+        if average > 99:
+            # The seed limit is 99 in ages. Because of that, we have to change the average variable to 99 if we were to ever hit the average cost case above that.
+            average = 99
+            # update deviation variable to meet our new average cost of 99 seeds.
+            deviation = min(19 * (average / 49.5), 99)
+        ## Loop until the tokay market shop prices are randomized.
+        for i in range(1, 3):
+            value = world.random.gauss(average, deviation) * 0.5
+            world.shop_prices[f"tokayMarket{i}"] = min(VALID_SEED_PRICE_VALUES, key=lambda x: abs(x - value))
 
 
 def compute_rupee_requirements(world) -> None:

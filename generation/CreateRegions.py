@@ -52,7 +52,7 @@ def create_regions(world) -> None:
             region = Region(GASHA_REGIONS[i], world.player, world.multiworld)
             world.multiworld.regions.append(region)
 
-    if world.options.linked_heros_cave:
+    if world.options.linked_heros_cave.value > 0:
         for region_name in D11_REGIONS:
             world.multiworld.regions.append(Region(region_name, world.player, world.multiworld))
 
