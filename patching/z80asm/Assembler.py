@@ -12,6 +12,14 @@ class GameboyAddress:
         self.offset = offset - 0x4000 if 0x8000 > offset >= 0x4000 else offset
         assert self.offset < 0x4000 or self.offset >= 0xffff, f"Offset out of range: {offset}"
 
+    @staticmethod
+    def from_address(address: int) -> "GameboyAddress":
+        bank = address >> 8
+        offset = address % 0x4000
+        if bank > 0:
+            offset += 0x4000
+        return GameboyAddress(bank, offset)
+
     def address_in_rom(self) -> int:
         assert self.offset != 0xffff, "Tried to get the address of a floating chunk"
         return (self.bank * 0x4000) + self.offset
