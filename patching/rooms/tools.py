@@ -1,10 +1,10 @@
 import os
 
-from ..patching.Util import simple_hex
+from ..Util import simple_hex
 
 
-def dump_rooms_to_txt(rooms: dict[int, bytearray], path: str) -> None:
-    for room in rooms:
+def dump_rooms_to_txt(rooms: list[bytearray], path: str) -> None:
+    for room in range(len(rooms)):
         file = open(os.path.join(path, simple_hex(room, 4) + ".txt"), "w")
         current_room = rooms[room]
         if len(current_room) == 0x50:

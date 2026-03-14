@@ -55,7 +55,7 @@ def decompress_room(rom: RomData, base_address: int, room_type: int, room_info: 
                     data = rom.read_word(room_pointer)
                     room_pointer += 2
                     data_pointer = data % 0x1000
-                    data_length = (data >> 12) + 3 # Max is 18 in vanilla
+                    data_length = (data >> 12) + 3 # Max is 18, used in vanilla
                     room_data.extend(group_dict[data_pointer:data_pointer + data_length])
                 else:
                     room_data.append(rom.read_byte(room_pointer))
@@ -64,7 +64,7 @@ def decompress_room(rom: RomData, base_address: int, room_type: int, room_info: 
         return room_data
 
 
-def decompress_rooms(rom: RomData, seasons: bool = True) -> dict[int, bytearray]:
+def decompress_rooms(rom: RomData, seasons: bool = True) -> list[bytearray]:
     if seasons:
         room_layout_group_table = GameboyAddress(0x04, 0x4c4c).address_in_rom()
         num_groups = 7
@@ -72,7 +72,7 @@ def decompress_rooms(rom: RomData, seasons: bool = True) -> dict[int, bytearray]
         room_layout_group_table = GameboyAddress(0x04, 0x4f6c).address_in_rom()
         num_groups = 6
 
-    room_data = {}
+    room_data = []
     for group in range(num_groups):
         current_address = room_layout_group_table + group * 8
         room_type = rom.read_byte(current_address)
@@ -89,9 +89,15 @@ def decompress_rooms(rom: RomData, seasons: bool = True) -> dict[int, bytearray]
         if room_type != 1:
             group_dict = rom.read_bytes(table_address, 0x1000)
             table_address += 0x1000
+            if __debug__ and False:
+                # Output the dict to see how it looks like
+                import os
+                from ..Util import simple_hex
+                file = open(os.path.join("output", simple_hex(group, 2) + ".bin"), "wb")
+                file.write(group_dict)
 
         for room in range(0x100):
             room_info = rom.read_word(table_address + room * 2)
 
-            room_data[group * 0x100 + room] = decompress_room(rom, base_address, room_type, room_info, group_dict)
+            room_data.append(decompress_room(rom, base_address, room_type, room_info, group_dict))
     return room_data
