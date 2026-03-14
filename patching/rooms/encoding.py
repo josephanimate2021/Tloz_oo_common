@@ -2,8 +2,8 @@ import heapq
 import logging
 import os
 from collections import Counter, defaultdict
+from importlib.resources import files
 
-from .decoding import decompress_room
 from .. import rooms
 from ..RomData import RomData
 from ..Util import simple_hex
@@ -95,8 +95,6 @@ def compute_score(parent_slice: bytes, all_slices: dict[bytes, int]) -> int:
 
 
 def make_compression_dict(room_data: list[bytearray], first_room: int) -> bytes:
-    import time
-    t = time.time()
     all_slices = defaultdict(lambda: 0)
     last_appearance = defaultdict(lambda: -0x100)
     for slice_size in range(3, 19):
@@ -133,7 +131,6 @@ def make_compression_dict(room_data: list[bytearray], first_room: int) -> bytes:
                     all_slices[sub_slice] = 0
 
     compression_dict = compression_dict.rjust(0x1000, b'\x00')
-    print(time.time() - t)
     return bytes(compression_dict)
 
 def get_dict_path(first_room: int, seasons: bool) -> str:
@@ -145,12 +142,17 @@ def get_dict_path(first_room: int, seasons: bool) -> str:
     )
 
 def load_compression_dict(first_room: int, seasons: bool) -> bytes | None:
-    path = get_dict_path(first_room, seasons)
-    if os.path.exists(path):
-        with open(path, "rb") as f:
-            return f.read()
-    else:
-        return None
+    path = os.path.join(
+        "compression_dict",
+        ("seasons" if seasons else "ages"),
+        f"dict_{simple_hex(first_room, 3)}.bin"
+    )
+    resource = files(rooms).joinpath(path)
+
+    if resource.is_file():
+        return resource.read_bytes()
+
+    return None
 
 
 def encode_group_data_big(room_data: list[bytearray], first_room: int, seasons: bool) -> tuple[int, bytearray, bytearray]:
@@ -159,7 +161,12 @@ def encode_group_data_big(room_data: list[bytearray], first_room: int, seasons: 
         logging.warning("No compression dict found in the apworld, generating one, it will take some time...")
         compression_dict = make_compression_dict(room_data, first_room)
         if __debug__:
-            path = get_dict_path(first_room, seasons)
+            path = os.path.join(
+                os.path.dirname(rooms.__file__),
+                "compression_dict",
+                ("seasons" if seasons else "ages"),
+                f"dict_{simple_hex(first_room, 3)}.bin"
+            )
             with open(path, "wb") as f:
                 f.write(compression_dict)
             logging.info(f"Saved a compression dict to {path} for future use.")
