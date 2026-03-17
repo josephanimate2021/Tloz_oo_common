@@ -4,6 +4,9 @@ def gen_flag_byte(location_data):
 
     Parameters:
         object: data of all given locations.
+
+    Returns:
+        object: locations with their filled flag bytes.
     """
     for location in location_data.values():
         if "flag_byte" not in location:
@@ -15,3 +18,4 @@ def gen_flag_byte(location_data):
                     room -= 0x100
                 room -= 0x100
             location["flag_byte"] = 0xc700 + room
+    return location_data

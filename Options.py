@@ -1,9 +1,9 @@
+from dataclasses import dataclass
 from datetime import datetime
 
 from Options import Choice, DeathLink, DefaultOnToggle, PerGameCommonOptions, Range, Toggle, StartInventoryPool, \
     ItemDict, ItemsAccessibility, ItemSet, Visibility, OptionGroup, NamedRange
-
-from ..data import ITEMS_DATA
+from ..data.Items import ITEMS_DATA
 
 
 class OraclesGoal(Choice):

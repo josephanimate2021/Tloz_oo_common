@@ -86,25 +86,6 @@ def build_rupee_item_dict(world, rupee_item_count: int, filler_item_count: int) 
     return build_currency_item_dict(world, rupee_item_count, filler_item_count, target, total_cost, "Rupees", VALID_RUPEE_ITEM_VALUES)
 
 
-def build_ore_item_dict(world, ore_item_count: int, filler_item_count: int) -> tuple[dict[str, int], int]:
-    """
-    Builds an ore pool for a seasons based game
-
-    Parameters:
-        world: The world that is being used for the building.
-        ore_item_count (int): The amount of ore chunks that are being filled.
-        filler_item_count (int): Junk items being added to the mix
-
-    Returns:
-        dict: The fully built ore pool using the build_currency_item_dict function.
-    """
-    from ...data.Constants import MARKET_LOCATIONS, VALID_ORE_ITEM_VALUES
-    total_cost = sum([world.shop_prices[loc] for loc in MARKET_LOCATIONS])
-    target = total_cost / 2
-
-    return build_currency_item_dict(world, ore_item_count, filler_item_count, target, total_cost, "Ore Chunks", VALID_ORE_ITEM_VALUES)
-
-
 def build_currency_item_dict(world, currency_item_count: int, filler_item_count: int, initial_target,
                              total_cost: int, currency_name: str, valid_currency_item_values: list[int]) -> tuple[dict[str, int], int]:
     """
@@ -142,46 +123,3 @@ def build_currency_item_dict(world, currency_item_count: int, filler_item_count:
         return build_currency_item_dict(world, currency_item_count + 1, filler_item_count - 1, initial_target,
                                         total_cost, currency_name, valid_currency_item_values)
     return currency_item_dict, filler_item_count
-
-
-def filter_confined_dungeon_items_from_pool(world, items: list[Item]) -> None:
-    """
-    Filters confined dungeon items for a game.
-
-    Parameters:
-        world: The world that is being used for the filtering.
-        items (list[Item]): Items that are being filtered.
-    """
-    confined_dungeon_items = []
-    excluded_dungeons = []
-    if world.options.exclude_dungeons_without_essence and not world.options.shuffle_essences:
-        for i, essence_name in enumerate(ITEM_GROUPS["Essences"]):
-            if essence_name not in world.essences_in_game:
-                excluded_dungeons.append(i + 1)
-
-    # Put Small Keys / Master Keys unless keysanity is enabled for those
-    if world.options.master_keys != OraclesMasterKeys.option_disabled:
-        small_keys_name = "Master Key"
-    else:
-        small_keys_name = "Small Key"
-    if not world.options.keysanity_small_keys:
-        confined_dungeon_items.extend([item for item in items if item.name.startswith(small_keys_name)])
-    else:
-        for i in excluded_dungeons:
-            confined_dungeon_items.extend([item for item in items if item.name == f"{small_keys_name} ({DUNGEON_NAMES[i]})"])
-
-    # Put Boss Keys unless keysanity is enabled for those
-    if not world.options.keysanity_boss_keys:
-        confined_dungeon_items.extend([item for item in items if item.name.startswith("Boss Key")])
-    else:
-        for i in excluded_dungeons:
-            confined_dungeon_items.extend([item for item in items if item.name == f"Boss Key ({DUNGEON_NAMES[i]})"])
-
-    # Put Maps & Compasses unless keysanity is enabled for those
-    if not world.options.keysanity_maps_compasses:
-        confined_dungeon_items.extend([item for item in items if item.name.startswith("Dungeon Map")
-                                       or item.name.startswith("Compass")])
-
-    for item in confined_dungeon_items:
-        items.remove(item)
-    world.pre_fill_items.extend(confined_dungeon_items)

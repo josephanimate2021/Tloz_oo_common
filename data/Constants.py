@@ -3,6 +3,12 @@ from enum import IntEnum
 SEASONS_ROM_HASH = "f2dc6c4e093e4f8c6cbea80e8dbd62cb"
 AGES_ROM_HASH = "c4639cc61c049e5a085526bb6cac03bb"
 
+COMPANIONS = [
+    "Ricky",
+    "Dimitri",
+    "Moosh"
+]
+
 DIRECTION_UP = 0
 DIRECTION_RIGHT = 1
 DIRECTION_DOWN = 2
