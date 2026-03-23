@@ -57,7 +57,7 @@ def value_to_byte_array(value: int, expected_size: int) -> list[int]:
         for i in output:
             initial_value <<= 8
             initial_value += i
-        raise ArgumentOverflowError(value, expected_size)
+        raise ArgumentOverflowError(initial_value, expected_size)
     while len(output) < expected_size:
         output.append(0x00)
 
