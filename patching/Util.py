@@ -45,3 +45,14 @@ def get_available_random_colors_from_sprite_name(sprite_filename: str) -> list[s
 
 def simple_hex(num: int, size: int = 2) -> str:
     return hex(num)[2:].rjust(size, "0")
+
+
+def script_delay(frames: int) -> str:
+    known_delays = [1, 4, 8, 10, 15, 20, 30, 40, 60, 90, 120, 180, 240]
+    if frames in known_delays:
+        delay_index = known_delays.index(frames)
+        return f"db $f{simple_hex(delay_index, 1)}\n"
+    elif frames > 0xff:
+        return script_delay(240) + script_delay(frames - 240)
+    else:
+        return f"db setcounter1,${simple_hex(frames)}\n"
