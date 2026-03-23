@@ -160,17 +160,21 @@ class Z80Assembler:
         if block.requires_injection():
             bank_cave = self.bank_caves[block.addr.bank]
             if isinstance(bank_cave, list):
-                if block.label.startswith("dma_"):
-                    raise Exception(f"Graphics are not implemented yet for block {block.label}")
                 for i in range(len(bank_cave) - 1):
                     cave_range = bank_cave[i]
-                    if cave_range[0] + block.precompiled_size > cave_range[1]:
-                        continue
                     injection_offset = cave_range[0]
+                    if block.label.startswith("dma_") and injection_offset % 0x10 != 0:
+                        # If block is meant to be loaded in the graphics memory, it needs to be aligned particularly
+                        injection_offset += 0x10 - (injection_offset % 0x10)
+                    if injection_offset + block.precompiled_size > cave_range[1]:
+                        continue
                     cave_range[0] += block.precompiled_size
                     break
                 else:
                     injection_offset = bank_cave[-1]
+                    if block.label.startswith("dma_") and injection_offset % 0x10 != 0:
+                        # If block is meant to be loaded in the graphics memory, it needs to be aligned particularly
+                        injection_offset += 0x10 - (injection_offset % 0x10)
                     bank_cave[-1] += block.precompiled_size
             else:
                 injection_offset = bank_cave
