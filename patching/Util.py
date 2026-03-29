@@ -32,7 +32,7 @@ def camel_case(text):
     return s[0] + "".join(i.capitalize() for i in s[1:])
 
 
-def convert_value_to_digits(value: int):
+def convert_value_to_digits(value: int) -> list[int]:
     """
     Converts a value into digits.
 
@@ -57,9 +57,8 @@ def get_available_random_colors_from_sprite_name(sprite_filename: str) -> list[s
     Parses the sprite filename to detect a potential "accepted colors suffix" which uses the following format:
     mysrite_<COLORS>.bin, where COLORS is a set of letters representing which colors can be rolled as random colors
     for that sprite.
-    This was built for people who play with both random sprite & random color, who wants a subset of colors for
+    This was built for people who play with both random sprite & random color, but who want a subset of colors for
     each sprite (e.g. if they play a Tokay, they only want it orange or red).
-
     Parameters:
         sprite_filename (str): The name of the sprite to load.
     
@@ -85,14 +84,34 @@ def get_available_random_colors_from_sprite_name(sprite_filename: str) -> list[s
     return [color for letter, color in CHARACTER_COLORS.items() if letter in suffix]
 
 
-def simple_hex(num: int) -> str:
+def simple_hex(num: int, size: int = 2) -> str:
     """
     Gets a hex string from a number
 
     Parameters:
         num (int) A number that will be converted into a hex string.
+        size (int) The size of the hex string, in number of characters. Default is 2.
 
     Returns:
         str: Hex from the given number.
     """
-    return hex(num)[2:].rjust(2, "0")
+    return hex(num)[2:].rjust(size, "0")
+
+
+def script_delay(frames: int) -> str:
+    """
+    Gets a script delay from a number of frames.
+    
+    Parameters:
+        frames (int) A number of frames to convert into a script delay.
+    Returns:     
+        str: A script delay from the given number of frames.
+    """
+    known_delays = [1, 4, 8, 10, 15, 20, 30, 40, 60, 90, 120, 180, 240]
+    if frames in known_delays:
+        delay_index = known_delays.index(frames)
+        return f"db $f{simple_hex(delay_index, 1)}\n"
+    elif frames > 0xff:
+        return script_delay(240) + script_delay(frames - 240)
+    else:
+        return f"db setcounter1,${simple_hex(frames)}\n"

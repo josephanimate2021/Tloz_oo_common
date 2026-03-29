@@ -133,21 +133,9 @@ def make_compression_dict(room_data: list[bytearray], first_room: int) -> bytes:
     compression_dict = compression_dict.rjust(0x1000, b'\x00')
     return bytes(compression_dict)
 
-def get_dict_path(first_room: int, seasons: bool) -> str:
-    return os.path.join(
-        os.path.dirname(rooms.__file__),
-        "compression_dict",
-        ("seasons" if seasons else "ages"),
-        f"dict_{simple_hex(first_room, 3)}.bin"
-    )
 
 def load_compression_dict(first_room: int, seasons: bool) -> bytes | None:
-    path = os.path.join(
-        "compression_dict",
-        ("seasons" if seasons else "ages"),
-        f"dict_{simple_hex(first_room, 3)}.bin"
-    )
-    resource = files(rooms).joinpath(path)
+    resource = files(rooms).joinpath("compression_dict", "seasons" if seasons else "ages", f"dict_{simple_hex(first_room, 3)}.bin")
 
     if resource.is_file():
         return resource.read_bytes()
