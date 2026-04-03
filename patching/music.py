@@ -37,11 +37,6 @@ LOOPING_SFX_INDICES = {0xb9, 0xc2}
 BASE_SFX_INDICES = set(range(0x4c, 0xd5)) - UNUSED_INDICES - LOOPING_SFX_INDICES - \
                    GAME_SPECIFIC_SFX_INDICES[Game.Seasons] - GAME_SPECIFIC_SFX_INDICES[Game.Ages]
 
-def rom_type(rom: bytearray) -> Game:
-    # This is a placeholder - implement actual ROM type detection
-    # For now, we'll assume it's Seasons if the first byte is 0x00
-    return Game.Seasons if rom[0] == 0x00 else Game.Ages
-
 def format_offset(offset: int) -> str:
     return f"0x{offset:04x}"
 
@@ -65,23 +60,20 @@ def shuffle(array: List[Any]) -> List[Any]:
         copy[i], copy[j] = copy[j], copy[i]
     return copy
 
-def shuffle_audio(rom: bytearray, indices: Set[int]) -> None:
+def shuffle_audio(rom: bytearray, indices: Set[int], game: Game) -> None:
     view = memoryview(rom)
-    game = rom_type(rom)
     offset = SOUND_POINTER_TABLE_OFFSETS[game]
     ptrs = [read_sound_ptr(view, offset + i * SOUND_PTR_SIZE) for i in indices]
     shuffled_ptrs = shuffle(ptrs)
     for i, ptr in zip(indices, shuffled_ptrs):
         write_sound_ptr(view, offset + i * SOUND_PTR_SIZE, ptr)
 
-def shuffle_music(rom: bytearray) -> bytes:
-    game = rom_type(rom)
+def shuffle_music(rom: bytearray, game: Game) -> bytes:
     indices = BASE_MUSIC_INDICES.union(GAME_SPECIFIC_MUSIC_INDICES[game])
-    shuffle_audio(rom, indices)
+    shuffle_audio(rom, indices, game)
     return bytes(rom)
 
-def shuffle_sfx(rom: bytearray) -> bytes:
-    game = rom_type(rom)
+def shuffle_sfx(rom: bytearray, game: Game) -> bytes:
     indices = BASE_SFX_INDICES.union(GAME_SPECIFIC_SFX_INDICES[game])
-    shuffle_audio(rom, indices)
+    shuffle_audio(rom, indices, game)
     return bytes(rom)
