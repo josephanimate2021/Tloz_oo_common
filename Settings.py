@@ -31,3 +31,13 @@ class OraclesSettings(settings.Group):
         """
         If true, no music will be played in the game while sound effects remain untouched
         """
+
+    class OoMusicShuffle(str):
+        """
+        Defines if you want music tracks to be shuffled each time you patch a new game.
+        """
+
+    class OoSfxShuffle(str):
+        """
+        Defines if you want sound effects to be shuffled each time you patch a new game.
+        """
